@@ -1,6 +1,6 @@
 /* global describe it expect before */
-import Style from 'ol/style/style';
-import OLFormatGeoJSON from 'ol/format/geojson';
+import Style from 'ol/style/Style';
+import OLFormatGeoJSON from 'ol/format/GeoJSON';
 
 import Reader from '../src/Reader';
 import OlStyler, { createOlStyleFunction } from '../src/OlStyler';

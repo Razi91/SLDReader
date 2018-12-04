@@ -1,10 +1,10 @@
-import Style from 'ol/style/style';
-import Fill from 'ol/style/fill';
-import Stroke from 'ol/style/stroke';
-import Circle from 'ol/style/circle';
-import Icon from 'ol/style/icon';
-import RegularShape from 'ol/style/regularshape';
-import Text from 'ol/style/text';
+import Style from 'ol/style/Style';
+import Fill from 'ol/style/Fill';
+import Stroke from 'ol/style/Stroke';
+import Circle from 'ol/style/Circle';
+import Icon from 'ol/style/Icon';
+import RegularShape from 'ol/style/RegularShape';
+import Text from 'ol/style/Text';
 
 import { getRules } from './Utils';
 import getGeometryStyles from './GeometryStyles';
