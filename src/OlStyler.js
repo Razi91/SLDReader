@@ -121,6 +121,7 @@ function pointStyle(pointsymbolizer) {
       stroke = undefined;
     }
     const radius = Number(style.size) || 10;
+    const rotation = Number(style.rotation) || void 0
     switch (style.mark.wellknownname) {
       case 'circle':
         return new Style({
@@ -165,22 +166,38 @@ function pointStyle(pointsymbolizer) {
               }),
           }),
         });
-      case 'x':
-        return new Style({
-          image: new RegularShape({
-            angle: Math.PI / 4,
-            fill,
-            points: 4,
-            radius1: radius,
-            radius2: 0,
-            stroke:
-              stroke ||
-              new Stroke({
-                color: fillColor,
-                width: radius / 2,
-              }),
-          }),
-        });
+        case 'x':
+          return new Style({
+            image: new RegularShape({
+              angle: Math.PI / 4,
+              fill,
+              points: 4,
+              radius1: radius,
+              radius2: 0,
+              stroke:
+                stroke ||
+                new Stroke({
+                  color: fillColor,
+                  width: radius / 2,
+                }),
+            }),
+          });
+        case 'line':
+          return new Style({
+            image: new RegularShape({
+              angle: rotation / Math.PI / 2,
+              fill,
+              points: 2,
+              radius1: radius,
+              radius2: 0,
+              stroke:
+                stroke ||
+                new Stroke({
+                  color: fillColor,
+                  width: radius / 2,
+                }),
+            }),
+          });
       default:
         // Default is `square`
         return new Style({
@@ -188,7 +205,7 @@ function pointStyle(pointsymbolizer) {
             angle: Math.PI / 4,
             fill,
             points: 4,
-            radius,
+            radius: Math.ceil(radius / Math.sin(Math.PI / 4)),
             stroke,
           }),
         });
