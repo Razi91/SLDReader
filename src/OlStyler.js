@@ -93,7 +93,6 @@ function lineStyle(linesymbolizer) {
     }),
   });
 }
-
 /**
  * @private
  * @param  {PointSymbolizer} pointsymbolizer [description]
@@ -131,6 +130,7 @@ function pointStyle(pointsymbolizer) {
             stroke,
           }),
         });
+      case 'equilateral_triangle':
       case 'triangle':
         return new Style({
           image: new RegularShape({
