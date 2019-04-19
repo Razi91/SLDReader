@@ -24,8 +24,16 @@ function addPropArray(node, obj, prop) {
  */
 function addProp(node, obj, prop) {
   const property = prop.toLowerCase();
-  obj[property] = {};
-  readNode(node, obj[property]);
+  if (property in obj) {
+    if (!Array.isArray(obj[property])) {
+      obj[property] = [obj[property]]
+    }
+    obj[property].push({})
+    readNode(node, obj[property][obj[property].length - 1]);
+  } else {
+    obj[property] = {};
+    readNode(node, obj[property]);
+  }
 }
 
 /**

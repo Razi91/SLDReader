@@ -62,6 +62,17 @@ describe('Reads xml', () => {
     expect(rule.pointsymbolizer.graphic.mark).to.have.property('wellknownname');
     expect(rule.pointsymbolizer.graphic.mark.wellknownname).to.equal('cross');
   });
+  it('roads layer have 2 linesymbolizers', () => {
+    const rule = result.layers['1'].styles['0'].featuretypestyles['0'].rules['0'];
+    expect(rule).to.have.property('linesymbolizer');
+    expect(Array.isArray(rule.linesymbolizer)).to.equal(true);
+    expect(rule.linesymbolizer.length).to.equal(2);
+    for (let i = 0; i < 2; i++) {
+      expect(rule.linesymbolizer[0]).to.have.property('stroke');
+      expect(rule.linesymbolizer[0].stroke.css).to.have.property('strokeWidth');
+      expect(rule.linesymbolizer[0].stroke.css).to.have.property('stroke');
+    }
+  })
 });
 
 describe('Reads xml sld 11', () => {

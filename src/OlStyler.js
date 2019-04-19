@@ -9,6 +9,20 @@ import Text from 'ol/style/Text';
 import { getRules } from './Utils';
 import getGeometryStyles from './GeometryStyles';
 
+function flatten(array) {
+  if (!Array.isArray(array)) {
+    return array;
+  }
+  return array.reduce( function (arr, item) {
+    if (Array.isArray(item)) {
+      return arr.concat(...item);
+    } else {
+      arr.push(item);
+    }
+    return arr;
+  }, []);
+}
+
 /**
  * @private
  * @param  {string} hex   eg #AA00FF
@@ -314,7 +328,13 @@ export default function OlStyler(GeometryStyles, feature) {
     ? feature.getGeometry()
     : feature.geometry;
   const type = geometry.getType ? geometry.getType() : geometry.type;
-  const { polygon, line, point, text } = GeometryStyles;
+  let { polygon, line, point, text } = GeometryStyles;
+
+  polygon = flatten(polygon);
+  line = flatten(line);
+  point = flatten(point);
+  text = flatten(text);
+
   let styles = [];
   switch (type) {
     case 'Polygon':

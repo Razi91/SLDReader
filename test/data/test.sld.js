@@ -509,6 +509,16 @@ export const sld = `<?xml version="1.0" encoding="UTF-8"?>
           <sld:LineSymbolizer>
             <sld:Stroke>
               <sld:CssParameter name="stroke">
+                <ogc:Literal>white</ogc:Literal>
+              </sld:CssParameter>
+              <sld:CssParameter name="stroke-width">
+                <ogc:Literal>3</ogc:Literal>
+              </sld:CssParameter>
+            </sld:Stroke>
+          </sld:LineSymbolizer>
+          <sld:LineSymbolizer>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">
                 <ogc:Literal>red</ogc:Literal>
               </sld:CssParameter>
               <sld:CssParameter name="stroke-width">
