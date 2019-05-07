@@ -333,6 +333,52 @@ function textStyle(textsymbolizer, feature, type) {
   return new Style({});
 }
 
+// Create memoized versions of the style converters.
+// They use a WeakMap to return the same OL style object if the symbolizer is the same.
+// Note: this only works for constant symbolizers!
+// Todo: find a smart way to optimize text symbolizers.
+
+/**
+ * Function to memoize style conversion functions that convert sld symbolizers to OpenLayers style instances.
+ * The memoized version of the style converter returns the same OL style instance if the symbolizer is the same object.
+ * Uses a WeakMap internally.
+ * Note: This only works for constant symbolizers.
+ * Note: Text symbolizers depend on the feature property and the geometry type, these cannot be cached in this way.
+ * @private
+ * @param {Function} styleFunction Function that accepts a single symbolizer object and returns the corresponding OpenLayers style object.
+ * @returns {Function} The memoized function of the style conversion function.
+ */
+function memoize(styleFunction) {
+  const styleCache = new WeakMap();
+
+  return symbolizer => {
+    let olStyle = styleCache.get(symbolizer);
+
+    if (!olStyle) {
+      olStyle = styleFunction(symbolizer);
+      styleCache.set(symbolizer, olStyle);
+    }
+
+    return olStyle;
+  };
+}
+
+// Memoized versions of point, line and polygon style converters.
+const cachedPointStyle = memoize(pointStyle);
+const cachedLineStyle = memoize(lineStyle);
+const cachedPolygonStyle = memoize(polygonStyle);
+
+const defaultStyles = [
+  new Style({
+    image: new Circle({
+      radius: 2,
+      fill: new Fill({
+        color: 'blue',
+      }),
+    }),
+  }),
+];
+
 /**
  * Create openlayers style
  * @example OlStyler(getGeometryStyles(rules), geojson.geometry.type);
@@ -358,7 +404,7 @@ export default function OlStyler(GeometryStyles, feature) {
     case 'Polygon':
     case 'MultiPolygon':
       for (let i = 0; i < polygon.length; i += 1) {
-        styles.push(polygonStyle(polygon[i]));
+        styles.push(cachedPolygonStyle(polygon[i]));
       }
       for (let j = 0; j < text.length; j += 1) {
         styles.push(textStyle(text[j], feature, 'polygon'));
@@ -367,7 +413,7 @@ export default function OlStyler(GeometryStyles, feature) {
     case 'LineString':
     case 'MultiLineString':
       for (let j = 0; j < line.length; j += 1) {
-        styles.push(lineStyle(line[j]));
+        styles.push(cachedLineStyle(line[j]));
       }
       for (let j = 0; j < text.length; j += 1) {
         styles.push(textStyle(text[j], feature, 'line'));
@@ -376,28 +422,20 @@ export default function OlStyler(GeometryStyles, feature) {
     case 'Point':
     case 'MultiPoint':
       for (let j = 0; j < point.length; j += 1) {
-        styles.push(pointStyle(point[j]));
+        styles.push(cachedPointStyle(point[j]));
       }
       for (let j = 0; j < text.length; j += 1) {
         styles.push(textStyle(text[j], feature, 'point'));
       }
       break;
     default:
-      styles = [
-        new Style({
-          image: new Circle({
-            radius: 2,
-            fill: new Fill({
-              color: 'blue',
-            }),
-          }),
-        }),
-      ];
+      styles = defaultStyles;
   }
   return styles;
 }
 
 /**
+ * @private
  * Extract feature id from an OpenLayers Feature.
  * @param {Feature} feature {@link https://openlayers.org/en/latest/apidoc/module-ol_Feature-Feature.html|ol/Feature}
  * @returns {string} Feature id.
@@ -407,19 +445,21 @@ function getOlFeatureId(feature) {
 }
 
 /**
- * Extract properties object from an OpenLayers Feature.
+ * @private
+ * Extract a property value from an OpenLayers Feature.
  * @param {Feature} feature {@link https://openlayers.org/en/latest/apidoc/module-ol_Feature-Feature.html|ol/Feature}
- * @returns {object} Feature properties object.
+ * @param {string} propertyName The name of the feature property to read.
+ * @returns {object} Property value.
  */
-function getOlFeatureProperties(feature) {
-  return feature.getProperties();
+function getOlFeatureProperty(feature, propertyName) {
+  return feature.get(propertyName);
 }
 
 /**
  * Create an OpenLayers style function from a FeatureTypeStyle object extracted from an SLD document.
  * @param {FeatureTypeStyle} featureTypeStyle Feature Type Style object.
  * @param {object} options Options
- * @param {function} convertResolution An optional function to convert the resolution in map units/pixel to resolution in meters/pixel.
+ * @param {function} options.convertResolution An optional function to convert the resolution in map units/pixel to resolution in meters/pixel.
  * When not given, the map resolution is used as-is.
  * @returns {Function} A function that can be set as style function on an OpenLayers vector style layer.
  * @example
@@ -435,7 +475,7 @@ export function createOlStyleFunction(featureTypeStyle, options = {}) {
 
     // Determine applicable style rules for the feature, taking feature properties and current resolution into account.
     const rules = getRules(featureTypeStyle, feature, resolution, {
-      getProperties: getOlFeatureProperties,
+      getProperty: getOlFeatureProperty,
       getFeatureId: getOlFeatureId,
     });
 
