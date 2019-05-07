@@ -166,13 +166,14 @@ function pointStyle(pointsymbolizer) {
               }),
           }),
         });
+        case 'cross2':
         case 'x':
           return new Style({
             image: new RegularShape({
               angle: Math.PI / 4,
               fill,
               points: 4,
-              radius1: radius,
+              radius1: Math.floor(radius / Math.sin(Math.PI/4)),
               radius2: 0,
               stroke:
                 stroke ||
