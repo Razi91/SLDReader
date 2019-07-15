@@ -13,7 +13,7 @@ function flatten(array) {
   if (!Array.isArray(array)) {
     return array;
   }
-  return array.reduce( function (arr, item) {
+  return array.reduce(function (arr, item) {
     if (Array.isArray(item)) {
       return arr.concat(...item);
     } else {
@@ -39,7 +39,7 @@ function hexToRGB(hex, alpha) {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-function polygonStyle(style) {
+function polygonStyle(style, scale=1) {
   const stroke = style.stroke && (style.stroke.css || style.stroke.svg);
   const fill = style.fill && (style.fill.css || style.fill.svg);
   return new Style({
@@ -56,11 +56,11 @@ function polygonStyle(style) {
       new Stroke({
         color:
           stroke.strokeOpacity &&
-          stroke.stroke &&
-          stroke.stroke.slice(0, 1) === '#'
+            stroke.stroke &&
+            stroke.stroke.slice(0, 1) === '#'
             ? hexToRGB(stroke.stroke, stroke.strokeOpacity)
             : stroke.stroke || '#3399CC',
-        width: stroke.strokeWidth || 1.25,
+        width: stroke.strokeWidth * scale || 1.25,
         lineCap: stroke.strokeLinecap && stroke.strokeLinecap,
         lineDash: stroke.strokeDasharray && stroke.strokeDasharray.split(' '),
         lineDashOffset: stroke.strokeDashoffset && stroke.strokeDashoffset,
@@ -73,8 +73,9 @@ function polygonStyle(style) {
  * @private
  * @param  {LineSymbolizer} linesymbolizer [description]
  * @return {object} openlayers style
+ * @param {Number} scale Scale sizes
  */
-function lineStyle(linesymbolizer) {
+function lineStyle(linesymbolizer, scale=1) {
   let style = {};
   if (linesymbolizer.stroke) {
     style = linesymbolizer.stroke.css || linesymbolizer.stroke.svg;
@@ -85,7 +86,7 @@ function lineStyle(linesymbolizer) {
         style.strokeOpacity && style.stroke && style.stroke.slice(0, 1) === '#'
           ? hexToRGB(style.stroke, style.strokeOpacity)
           : style.stroke || '#3399CC',
-      width: style.strokeWidth || 1.25,
+      width: style.strokeWidth * scale || 1.25,
       lineCap: style.strokeLinecap && style.strokeLinecap,
       lineDash: style.strokeDasharray && style.strokeDasharray.split(' '),
       lineDashOffset: style.strokeDashoffset && style.strokeDashoffset,
@@ -97,8 +98,9 @@ function lineStyle(linesymbolizer) {
  * @private
  * @param  {PointSymbolizer} pointsymbolizer [description]
  * @return {object} openlayers style
+ * @param {Number} scale Scale sizes
  */
-function pointStyle(pointsymbolizer) {
+function pointStyle(pointsymbolizer, scale=1) {
   const { graphic: style } = pointsymbolizer;
   if (style.externalgraphic && style.externalgraphic.onlineresource) {
     return new Style({
@@ -111,16 +113,17 @@ function pointStyle(pointsymbolizer) {
     fill = new Fill({
       color: fillColor,
     });
-    if (stroke && !(Number(stroke.css.strokeWidth) === 0)) {
-      const { stroke: cssStroke, strokeWidth: cssStrokeWidth } = stroke.css;
+    const cssStroke = stroke && stroke.css && stroke.css.color || 'black'
+    const cssStrokeWidth = stroke && stroke.css && Number(stroke.css.width) || 2
+    if (cssStrokeWidth !== 0) {
       stroke = new Stroke({
         color: cssStroke || 'black',
-        width: cssStrokeWidth || 2,
+        width: cssStrokeWidth * scale || 2,
       });
     } else {
       stroke = undefined;
     }
-    const radius = Number(style.size) || 10;
+    const radius = Number(style.size) * scale || 10;
     const rotation = Number(style.rotation) || void 0
     switch (style.mark.wellknownname) {
       case 'circle':
@@ -166,39 +169,39 @@ function pointStyle(pointsymbolizer) {
               }),
           }),
         });
-        case 'cross2':
-        case 'x':
-          return new Style({
-            image: new RegularShape({
-              angle: Math.PI / 4,
-              fill,
-              points: 4,
-              radius1: Math.floor(radius / Math.sin(Math.PI/4)),
-              radius2: 0,
-              stroke:
-                stroke ||
-                new Stroke({
-                  color: fillColor,
-                  width: radius / 2,
-                }),
-            }),
-          });
-        case 'line':
-          return new Style({
-            image: new RegularShape({
-              angle: rotation / Math.PI / 2,
-              fill,
-              points: 2,
-              radius1: radius,
-              radius2: 0,
-              stroke:
-                stroke ||
-                new Stroke({
-                  color: fillColor,
-                  width: radius / 2,
-                }),
-            }),
-          });
+      case 'cross2':
+      case 'x':
+        return new Style({
+          image: new RegularShape({
+            angle: Math.PI / 4,
+            fill,
+            points: 4,
+            radius1: Math.floor(radius / Math.sin(Math.PI / 4)),
+            radius2: 0,
+            stroke:
+              stroke ||
+              new Stroke({
+                color: fillColor,
+                width: radius / 2,
+              }),
+          }),
+        });
+      case 'line':
+        return new Style({
+          image: new RegularShape({
+            angle: rotation / Math.PI / 2,
+            fill,
+            points: 2,
+            radius1: radius,
+            radius2: 0,
+            stroke:
+              stroke ||
+              new Stroke({
+                color: fillColor,
+                width: radius / 2,
+              }),
+          }),
+        });
       default:
         // Default is `square`
         return new Style({
@@ -228,9 +231,10 @@ function pointStyle(pointsymbolizer) {
  * @param {object|Feature} feature {@link http://geojson.org|geojson}
  *  or {@link https://openlayers.org/en/latest/apidoc/module-ol_Feature-Feature.html|ol/Feature}
  * @param {string} type geometry type, @see {@link http://geojson.org|geojson} for possible types
+ * @param {Number} scale Scale sizes
  * @return {object} openlayers style
  */
-function textStyle(textsymbolizer, feature, type) {
+function textStyle(textsymbolizer, feature, type, scale=1) {
   const properties = feature.getProperties
     ? feature.getProperties()
     : feature.properties;
@@ -276,8 +280,8 @@ function textStyle(textsymbolizer, feature, type) {
 
     const pointplacement =
       textsymbolizer &&
-      textsymbolizer.labelplacement &&
-      textsymbolizer.labelplacement.pointplacement
+        textsymbolizer.labelplacement &&
+        textsymbolizer.labelplacement.pointplacement
         ? textsymbolizer.labelplacement.pointplacement
         : {};
     const displacement =
@@ -288,8 +292,8 @@ function textStyle(textsymbolizer, feature, type) {
     const offsetY = displacement.displacementy ? displacement.displacementy : 0;
     const lineplacement =
       textsymbolizer &&
-      textsymbolizer.labelplacement &&
-      textsymbolizer.labelplacement.lineplacement
+        textsymbolizer.labelplacement &&
+        textsymbolizer.labelplacement.lineplacement
         ? textsymbolizer.labelplacement.lineplacement
         : null;
     const rotation = pointplacement.rotation ? pointplacement.rotation : 0;
@@ -461,6 +465,7 @@ function getOlFeatureProperty(feature, propertyName) {
  * @param {object} options Options
  * @param {function} options.convertResolution An optional function to convert the resolution in map units/pixel to resolution in meters/pixel.
  * When not given, the map resolution is used as-is.
+ * @param {Number} options.scale Optional parameter to scale sizes
  * @returns {Function} A function that can be set as style function on an OpenLayers vector style layer.
  * @example
  * myOlVectorLayer.setStyle(SLDReader.createOlStyleFunction(featureTypeStyle));
@@ -472,6 +477,11 @@ export function createOlStyleFunction(featureTypeStyle, options = {}) {
       typeof options.convertResolution === 'function'
         ? options.convertResolution(mapResolution)
         : mapResolution;
+
+    const scale =
+      typeof options.scale === 'Number'
+        ? options.scale
+        : 1;
 
     // Determine applicable style rules for the feature, taking feature properties and current resolution into account.
     const rules = getRules(featureTypeStyle, feature, resolution, {

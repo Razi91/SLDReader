@@ -299,7 +299,13 @@ export default function Reader(sld) {
   const doc = parser.parseFromString(sld, 'application/xml');
 
   for (let n = doc.firstChild; n; n = n.nextSibling) {
-    result.version = n.getAttribute('version');
+    try {
+      result.version = n.getAttribute('version');
+    } catch(e) {
+      console.error(e)
+      console.log(sld)
+      throw e
+    }
     readNode(n, result);
   }
   return result;
