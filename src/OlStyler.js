@@ -113,12 +113,13 @@ function pointStyle(pointsymbolizer, scale=1) {
     fill = new Fill({
       color: fillColor,
     });
-    const cssStroke = stroke && stroke.css && stroke.css.color || 'black'
+    console.log(stroke && stroke.css)
+    const cssStroke = stroke && stroke.css && stroke.css.stroke || 'black'
     const cssStrokeWidth = stroke && stroke.css && Number(stroke.css.width) || 2
     if (cssStrokeWidth !== 0) {
       stroke = new Stroke({
-        color: cssStroke || 'black',
-        width: cssStrokeWidth * scale || 2,
+        color: cssStroke,
+        width: cssStrokeWidth * scale,
       });
     } else {
       stroke = undefined;
