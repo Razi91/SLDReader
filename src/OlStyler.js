@@ -230,6 +230,14 @@ function pointStyle(pointsymbolizer) {
         return imageLoadingPointStyle;
     }
   }
+  let displacement = undefined;
+  if (pointsymbolizer && pointsymbolizer.displacement) {
+    const styleDisplacement = pointsymbolizer.displacement;
+    const displacementX = styleDisplacement.displacementx ? styleDisplacement.displacementx : 0;
+    const displacementY = styleDisplacement.displacementy ? styleDisplacement.displacementy : 0;
+    displacement = [displacementX, displacementY]
+  }
+
   if (style.mark) {
     let { fill, stroke } = style.mark;
     const fillColor = (fill && fill.styling && fill.styling.fill) || 'blue';
@@ -253,6 +261,7 @@ function pointStyle(pointsymbolizer) {
             fill,
             radius,
             stroke,
+            displacement,
           }),
         });
       case 'triangle':
@@ -262,6 +271,7 @@ function pointStyle(pointsymbolizer) {
             points: 3,
             radius,
             stroke,
+            displacement,
           }),
         });
       case 'star':
@@ -272,6 +282,7 @@ function pointStyle(pointsymbolizer) {
             radius1: radius,
             radius2: radius / 2.5,
             stroke,
+            displacement,
           }),
         });
       case 'cross':
@@ -281,6 +292,7 @@ function pointStyle(pointsymbolizer) {
             points: 4,
             radius1: radius,
             radius2: 0,
+            displacement,
             stroke:
               stroke ||
               new Stroke({
@@ -295,6 +307,7 @@ function pointStyle(pointsymbolizer) {
             fill,
             points: 6,
             radius1: radius,
+            displacement,
             stroke:
               stroke ||
               new Stroke({
@@ -309,6 +322,7 @@ function pointStyle(pointsymbolizer) {
             fill,
             points: 8,
             radius1: radius,
+            displacement,
             stroke:
               stroke ||
               new Stroke({
@@ -325,6 +339,7 @@ function pointStyle(pointsymbolizer) {
             points: 4,
             radius1: radius,
             radius2: 0,
+            displacement,
             stroke:
               stroke ||
               new Stroke({
@@ -340,6 +355,7 @@ function pointStyle(pointsymbolizer) {
             angle: Math.PI / 4,
             fill,
             points: 4,
+            displacement,
             // For square, scale radius so the height of the square equals the given size.
             radius: radius * Math.sqrt(2.0),
             stroke,
@@ -350,6 +366,7 @@ function pointStyle(pointsymbolizer) {
   return new Style({
     image: new Circle({
       radius: 4,
+      displacement,
       fill: new Fill({
         color: 'blue',
       }),
