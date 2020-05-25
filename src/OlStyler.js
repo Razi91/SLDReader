@@ -48,6 +48,9 @@ export default function OlStyler(GeometryStyles, feature) {
   switch (geometryType) {
     case 'Point':
     case 'MultiPoint':
+      for (let j = 0; j < line.length; j += 1) {
+        appendStyle(styles, line[j], feature, getLineStyle);
+      }
       for (let j = 0; j < point.length; j += 1) {
         appendStyle(styles, point[j], feature, getPointStyle);
       }

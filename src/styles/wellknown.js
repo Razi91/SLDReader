@@ -118,7 +118,7 @@ function getWellKnownSymbol(
         fill,
         points: 4,
         // For square, scale radius so the height of the square equals the given size.
-        radius1: radius * Math.sqrt(2.0),
+        radius: radius * Math.sqrt(2.0),
         stroke,
         rotation: rotationRadians,
       });
